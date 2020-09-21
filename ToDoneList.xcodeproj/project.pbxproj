@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		6F4123F33F87523898653FCC /* Pods_ToDoneList_ToDoneListUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C06CF8F227DD2DBF96ED11B /* Pods_ToDoneList_ToDoneListUITests.framework */; };
 		9E159FEC250CAD400094D5EE /* DateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E159FEB250CAD400094D5EE /* DateModel.swift */; };
+		9E4469E725172778000E9A36 /* ModifyAddToDoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4469E625172778000E9A36 /* ModifyAddToDoneViewController.swift */; };
+		9E4469EC2517278D000E9A36 /* ModifyToDone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E4469EB2517278D000E9A36 /* ModifyToDone.storyboard */; };
 		9E71724E250B901600C0C444 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E71724B250B901600C0C444 /* Task.swift */; };
 		9E79F41425049F9200A36AE0 /* AddToDone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E79F41325049F9200A36AE0 /* AddToDone.storyboard */; };
 		9E79F41625049FA300A36AE0 /* AddToDoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E79F41525049FA300A36AE0 /* AddToDoneViewController.swift */; };
@@ -55,6 +57,8 @@
 		5194438291623D635F02A40B /* Pods-ToDoneList-ToDoneListUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ToDoneList-ToDoneListUITests.debug.xcconfig"; path = "Target Support Files/Pods-ToDoneList-ToDoneListUITests/Pods-ToDoneList-ToDoneListUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		7DAFA4CCA2D035738A5A0964 /* Pods-ToDoneList.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ToDoneList.release.xcconfig"; path = "Target Support Files/Pods-ToDoneList/Pods-ToDoneList.release.xcconfig"; sourceTree = "<group>"; };
 		9E159FEB250CAD400094D5EE /* DateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateModel.swift; sourceTree = "<group>"; };
+		9E4469E625172778000E9A36 /* ModifyAddToDoneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModifyAddToDoneViewController.swift; sourceTree = "<group>"; };
+		9E4469EB2517278D000E9A36 /* ModifyToDone.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ModifyToDone.storyboard; sourceTree = "<group>"; };
 		9E71724B250B901600C0C444 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		9E79F41325049F9200A36AE0 /* AddToDone.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AddToDone.storyboard; sourceTree = "<group>"; };
 		9E79F41525049FA300A36AE0 /* AddToDoneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToDoneViewController.swift; sourceTree = "<group>"; };
@@ -115,6 +119,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9E4469D2251726C7000E9A36 /* ModifyToDone */ = {
+			isa = PBXGroup;
+			children = (
+				9E4469E625172778000E9A36 /* ModifyAddToDoneViewController.swift */,
+				9E4469EB2517278D000E9A36 /* ModifyToDone.storyboard */,
+			);
+			path = ModifyToDone;
+			sourceTree = "<group>";
+		};
 		9E717248250B901600C0C444 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +171,7 @@
 		9E8DFDC025049C2900F255C2 /* ToDoneList */ = {
 			isa = PBXGroup;
 			children = (
+				9E4469D2251726C7000E9A36 /* ModifyToDone */,
 				9E717248250B901600C0C444 /* Models */,
 				9ED2C8532508EFDA00672495 /* Extension */,
 				9ED2C8492508EB9600672495 /* SignIn */,
@@ -368,6 +382,7 @@
 				9E8DFDCB25049C2B00F255C2 /* Assets.xcassets in Resources */,
 				9ED2C84F2508EB9600672495 /* SignIn.storyboard in Resources */,
 				9E8DFDC925049C2900F255C2 /* Main.storyboard in Resources */,
+				9E4469EC2517278D000E9A36 /* ModifyToDone.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -498,6 +513,7 @@
 				9ED2C8512508EB9600672495 /* SignUpViewController.swift in Sources */,
 				9ED2C8572508EFDA00672495 /* UIColorExtension.swift in Sources */,
 				9E8DFDC625049C2900F255C2 /* ViewController.swift in Sources */,
+				9E4469E725172778000E9A36 /* ModifyAddToDoneViewController.swift in Sources */,
 				9E79F41625049FA300A36AE0 /* AddToDoneViewController.swift in Sources */,
 				9ED2C8582508EFDA00672495 /* UIViewControllerExtension.swift in Sources */,
 				9E8DFDC225049C2900F255C2 /* AppDelegate.swift in Sources */,

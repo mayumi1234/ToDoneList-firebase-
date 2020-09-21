@@ -1,8 +1,8 @@
 //
-//  AddToDoneViewController.swift
+//  ModifyAddToDoneViewController.swift
 //  ToDoneList
 //
-//  Created by m.yamanishi on 2020/09/06.
+//  Created by m.yamanishi on 2020/09/20.
 //  Copyright © 2020 Mayumi Yamanishi. All rights reserved.
 //
 
@@ -14,7 +14,7 @@ import FirebaseStorage
 import FirebaseFirestore
 import PKHUD
 
-class AddToDoneViewController: UIViewController {
+class ModifyAddToDoneViewController: UIViewController {
     
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var detailTextView: UITextView!
@@ -22,11 +22,14 @@ class AddToDoneViewController: UIViewController {
     @IBOutlet weak var continuedRecordButton: UIButton!
     
     var datePicker: UIDatePicker = UIDatePicker()
+    
+    var task: Task?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupDatePicker()
+        setupTaskValue()
     }
     
     override func viewDidLayoutSubviews() {
@@ -34,6 +37,12 @@ class AddToDoneViewController: UIViewController {
         
         AdsSetup()
         setupLayout()
+    }
+    
+    private func setupTaskValue() {
+        nameTextField.text = task?.name
+        detailTextView.text = task?.detail
+        dateTextField.text = task?.date
     }
     
     private func setupDatePicker() {
@@ -65,19 +74,12 @@ class AddToDoneViewController: UIViewController {
     }
     
     @IBAction func pushOnContinuedRecordButton(_ sender: Any) {
-        // 名前とやった時間を出力
-        //　firebaseに保存処理
-        //  MainViewControllerに値を受け渡す
-        // dismissはしない
         HUD.show(.progress)
         createToFirestore()
+        self.navigationController?.popToRootViewController(animated: true)
     }
     
     @IBAction func pushOnRecordButton(_ sender: Any) {
-        // 名前とやった時間を出力
-        //　firebaseに保存処理
-        //  MainViewControllerに値を受け渡す
-        // dismissはする
         HUD.show(.progress)
         createToFirestore()
         self.navigationController?.popToRootViewController(animated: true)
@@ -100,18 +102,19 @@ class AddToDoneViewController: UIViewController {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        
-        let documentID = UIViewController.randomString(length: 20)
+        guard let documentId = task?.documentId else {
+            return
+        }
 
         let docData = [
             "name": name,
             "detail": detail,
             "date": date,
-            "documentId": documentID
+            "documentId": documentId
             ] as [String : Any]
 
         // タスクを記録
-        db.collection("users").document(uid).collection("tasks").document(documentID).setData(docData) { (err) in
+        db.collection("users").document(uid).collection("tasks").document(documentId).setData(docData) { (err) in
             if let err = err {
                 print("Firestoreへの保存に失敗しました。\(err)")
                 HUD.hide()

@@ -13,7 +13,7 @@ import FirebaseStorage
 import Firebase
 import FirebaseFirestore
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var mainTableView: UITableView!
     @IBOutlet weak var bottomBarHeight: NSLayoutConstraint!
@@ -21,7 +21,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var bottomView: UIStackView!
     
     var tasks = [Task]()
-    var dates = [DateModel]()
     
     typealias MySectionRow = (mySection: String, myRow: Array<Task>)
     var mySectionRows = [MySectionRow]()
@@ -30,13 +29,23 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         setupLogin()
-        fetchForFirestore()
+        firestoreToTasks()
+        tableviewSetup()
         
         // ボトムは申請審査の時に、いるかいらないか判断
         bottomView.isHidden = true
-        
+    }
+    
+    private func tableviewSetup() {
         mainTableView.delegate = self
         mainTableView.dataSource = self
+        
+        //UILongPressGestureRecognizer（長押しイベント）宣言
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(cellLongPressed))
+        longPressGestureRecognizer.delegate = self
+
+        //tableviewにrecognizerを設定
+        mainTableView.addGestureRecognizer(longPressGestureRecognizer)
     }
     
     override func viewDidLayoutSubviews() {
@@ -45,29 +54,10 @@ class ViewController: UIViewController {
 //        AdsSetup()
     }
     
-    private func fetchForFirestore() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-
-        db.collection("users").document(uid).collection("date").getDocuments { (snaps, err) in
-            if let err = err {
-                print("Error getting documents: \(err)")
-            } else {
-                for document in snaps!.documents {
-                    let dic = document.data()
-                    let date = DateModel(dic: dic)
-                    // セクションのための配列を代入
-                    self.dates.insert(date, at: 0)
-                    let dateId = document.documentID
-                    self.firestoreToTasks(uid: uid, dateId: dateId)
-                }
-            }
-        }
-    }
-    
-    private func firestoreToTasks(uid: String, dateId: String) {
+    private func firestoreToTasks() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        db.collection("users").document(uid).collection("date").document(dateId).collection("tasks")
+        db.collection("users").document(uid).collection("tasks")
             .addSnapshotListener { (snapshots, err) in
                 if let err = err {
                     print("date情報の取得に失敗しました。\(err)")
@@ -80,14 +70,27 @@ class ViewController: UIViewController {
                         let dic = documentChange.document.data()
                         let task = Task(dic: dic)
                         self.tasks.append(task)
+                        if let index = self.mySectionRows.firstIndex(where: { $0.mySection == task.date }) {
+                            self.mySectionRows[index].myRow.append(task)
+                        } else {
+                            self.mySectionRows.insert((task.date, [task]), at: 0)
+                        }
+                        self.mainTableView.reloadData()
+                    case .modified:
+                        self.tasks.removeAll()
+                        self.mySectionRows.removeAll()
                         
-                        self.mySectionRows.insert((dateId, [task]), at: 0)
-//                        print("self.mySectionRows: ", self.mySectionRows)
-//                        print("self.tasks: ", self.tasks)
-//                        print("self.dates: ", self.dates)
-                        
-                    case .modified, .removed:
-                        print("nothing to do")
+                        let dic = documentChange.document.data()
+                        let task = Task(dic: dic)
+                        self.tasks.append(task)
+                        if let index = self.mySectionRows.firstIndex(where: { $0.mySection == task.date }) {
+                            self.mySectionRows[index].myRow.append(task)
+                        } else {
+                            self.mySectionRows.insert((task.date, [task]), at: 0)
+                        }
+                        self.mainTableView.reloadData()
+                    case .removed:
+                        print("test")
                     }
                 })
         }
@@ -126,9 +129,11 @@ class ViewController: UIViewController {
         admobView = GADBannerView(adSize:kGADAdSizeBanner)
         
         if #available(iOS 11.0, *) {
-            admobView.frame.origin = CGPoint(x:0, y: self.view.frame.size.height - admobView.frame.height - self.bottomBarHeight.constant - self.view.safeAreaInsets.bottom)
+//            admobView.frame.origin = CGPoint(x:0, y: self.view.frame.size.height - admobView.frame.height - self.bottomBarHeight.constant - self.view.safeAreaInsets.bottom)
+            admobView.frame.origin = CGPoint(x:0, y: self.view.frame.size.height - admobView.frame.height - self.view.safeAreaInsets.bottom)
         } else {
-            admobView.frame.origin = CGPoint(x:0, y: self.view.frame.size.height - admobView.frame.height - self.bottomBarHeight.constant)
+//            admobView.frame.origin = CGPoint(x:0, y: self.view.frame.size.height - admobView.frame.height - self.bottomBarHeight.constant)
+            admobView.frame.origin = CGPoint(x:0, y: self.view.frame.size.height - admobView.frame.height)
         }
         admobView.frame.size = CGSize(width: self.view.frame.width, height:admobView.frame.height)
         bottomTableViewConstraint.constant = admobView.frame.size.height
@@ -149,58 +154,78 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
+    //セル長押し時
+    @objc func cellLongPressed(sender : UILongPressGestureRecognizer){
+        //押された位置でcellのpathを取得
+        let point = sender.location(in: mainTableView)
+        let indexPath = mainTableView.indexPathForRow(at: point)
+        
+        //アラート生成
+        let actionSheet = UIAlertController(title: "Menu", message: "", preferredStyle: UIAlertController.Style.actionSheet)
+        
+        let action1 = UIAlertAction(title: "編集", style: UIAlertAction.Style.default, handler: {
+            (action: UIAlertAction!) in
+            let storyboard: UIStoryboard = UIStoryboard(name: "ModifyToDone", bundle: nil)//遷移先のStoryboardを設定
+            let nextView = storyboard.instantiateViewController(withIdentifier: "ModifyAddToDoneViewController") as! ModifyAddToDoneViewController//遷移先のViewControllerを設定
+            nextView.task = self.mySectionRows[indexPath!.section].myRow[indexPath!.row]
+            self.navigationController?.pushViewController(nextView, animated: true)//遷移する
+        })
+        let action2 = UIAlertAction(title: "削除", style: UIAlertAction.Style.default, handler: {
+            (action: UIAlertAction!) in
+//            選択されたセルを削除する
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let docId = self.mySectionRows[indexPath!.section].myRow[indexPath!.row].documentId
+            let task = self.mySectionRows[indexPath!.section].myRow[indexPath!.row]
+            
+            db.collection("users").document(uid).collection("tasks").document(docId).delete() { err in
+                if let err = err {
+                    print("Error removing document: \(err)")
+                } else {
+                    self.tasks.removeAll(where: { $0.documentId == task.documentId })
+                    self.mySectionRows.removeAll(where: { $0.mySection == task.documentId })
+                    self.mainTableView.reloadData()
+                    print(self.tasks, self.mySectionRows)
+                }
+            }
+        })
+        let close = UIAlertAction(title: "閉じる", style: UIAlertAction.Style.destructive, handler: {
+            (action: UIAlertAction!) in
+            print("閉じる")
+        })
+        
+        //UIAlertControllerにタイトル1ボタンとタイトル2ボタンと閉じるボタンをActionを追加
+        actionSheet.addAction(action1)
+        actionSheet.addAction(action2)
+        actionSheet.addAction(close)
+
+        if sender.state == UIGestureRecognizer.State.began{
+            self.present(actionSheet, animated: true, completion: nil)
+        }
+        else {
+            return
+        }
+    }
+    
     // セクションの数
     func numberOfSections(in tableView: UITableView) -> Int {
-        return dates.count
+        return mySectionRows.count
     }
     
     // セクションの中の数
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return mySectionRows[section].myRow.count
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return dates[section].date
+        return mySectionRows[section].mySection
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = mainTableView.dequeueReusableCell(withIdentifier: "cellId", for: indexPath) as! MainTableViewCell
-//        cell.task = tasks[indexPath.section][indexPath.row]
+        cell.task = mySectionRows[indexPath.section].myRow[indexPath.row]
         return cell
     }
-    
-//    選択する時
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        selectedClass = mySections[indexPath.section]
-//        selectedPerson = twoDimArray[indexPath.section][indexPath.row]
-//    }
 
-//    // sectionの中の数
-//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return 10
-//    }
-//
-//    // Section数
-//    func numberOfSections(in tableView: UITableView) -> Int {
-//        return uniqDate.count
-//    }
-//
-//    // Sectioのタイトル
-//    func tableView(_ tableView: UITableView,
-//                       titleForHeaderInSection section: Int) -> String? {
-//        for i in 0..<uniqDate.count {
-//            if section == i {
-//                titleString = uniqDate[i]
-//            }
-//        }
-//        return titleString
-//    }
-//
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = mainTableView.dequeueReusableCell(withIdentifier: "cellId", for: indexPath) as! MainTableViewCell
-//        cell.task = tasks[indexPath.row]
-//        return cell
-//    }
 }
 
 class MainTableViewCell: UITableViewCell {
