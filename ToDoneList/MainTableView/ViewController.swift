@@ -22,7 +22,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var tasks = [Task]()
     
-    typealias MySectionRow = (mySection: String, myRow: Array<Task>)
+    typealias MySectionRow = (mySection: String, date: Date, myRow: Array<Task>)
     var mySectionRows = [MySectionRow]()
     
     override func viewDidLoad() {
@@ -34,6 +34,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         
         // ボトムは申請審査の時に、いるかいらないか判断
         bottomView.isHidden = true
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
     }
     
     private func tableviewSetup() {
@@ -69,13 +74,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                     case .added:
                         let dic = documentChange.document.data()
                         let task = Task(dic: dic)
+                        print(task.date)
                         self.tasks.append(task)
-                        if let index = self.mySectionRows.firstIndex(where: { $0.mySection == task.date }) {
+                        if let index = self.mySectionRows.firstIndex(where: { $0.mySection == task.dateString }) {
                             self.mySectionRows[index].myRow.append(task)
                         } else {
-                            self.mySectionRows.insert((task.date, [task]), at: 0)
+                            self.mySectionRows.insert((task.dateString, task.date, [task]), at: 0)
                         }
+                        self.sortArray()
                         self.mainTableView.reloadData()
+                        
                     case .modified:
                         self.tasks.removeAll()
                         self.mySectionRows.removeAll()
@@ -83,10 +91,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                         let dic = documentChange.document.data()
                         let task = Task(dic: dic)
                         self.tasks.append(task)
-                        if let index = self.mySectionRows.firstIndex(where: { $0.mySection == task.date }) {
+                        if let index = self.mySectionRows.firstIndex(where: { $0.mySection == task.dateString }) {
                             self.mySectionRows[index].myRow.append(task)
                         } else {
-                            self.mySectionRows.insert((task.date, [task]), at: 0)
+                            self.mySectionRows.insert((task.dateString, task.date, [task]), at: 0)
                         }
                         self.mainTableView.reloadData()
                     case .removed:
@@ -94,8 +102,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                     }
                 })
         }
-        
-        
+    }
+    
+    private func sortArray() {
+        self.mySectionRows.sort { (m1, m2) -> Bool in
+            let m1Date = m1.date
+            let m2Date = m2.date
+            print(m1Date, m2Date)
+            return m1Date > m2Date
+        }
     }
     
     @IBAction func addToDoneButton(_ sender: Any) {
@@ -181,10 +196,15 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                 if let err = err {
                     print("Error removing document: \(err)")
                 } else {
-                    self.tasks.removeAll(where: { $0.documentId == task.documentId })
-                    self.mySectionRows.removeAll(where: { $0.mySection == task.documentId })
+                    
+                    if let mySectionRowIndex = self.mySectionRows.firstIndex(where: { $0.myRow.contains(where: { $0.documentId == task.documentId }) }) {
+                        self.mySectionRows[mySectionRowIndex].myRow.removeAll(where: { $0.documentId == task.documentId })
+                        if self.mySectionRows[mySectionRowIndex].myRow.count == 0 {
+                            self.mySectionRows.remove(at: mySectionRowIndex)
+                        }
+                    }
+                    
                     self.mainTableView.reloadData()
-                    print(self.tasks, self.mySectionRows)
                 }
             }
         })

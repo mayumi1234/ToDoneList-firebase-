@@ -12,13 +12,15 @@ class Task {
 
     var name: String
     var detail: String
-    var date: String
+    var dateString: String
+    var date: Date
     var documentId: String
 
     init(dic: [String: Any]) {
         self.name = dic["name"] as? String ?? ""
         self.detail = dic["detail"] as? String ?? ""
-        self.date = dic["date"] as? String ?? ""
+        self.dateString = dic["dateString"] as? String ?? ""
+        self.date = dic["date"] as? Date ?? Date()
         self.documentId = dic["documentId"] as? String ?? ""
     }
 

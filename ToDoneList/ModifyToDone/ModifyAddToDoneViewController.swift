@@ -42,7 +42,7 @@ class ModifyAddToDoneViewController: UIViewController {
     private func setupTaskValue() {
         nameTextField.text = task?.name
         detailTextView.text = task?.detail
-        dateTextField.text = task?.date
+        dateTextField.text = task?.dateString
     }
     
     private func setupDatePicker() {
@@ -96,7 +96,7 @@ class ModifyAddToDoneViewController: UIViewController {
         guard let detail = detailTextView.text else {
             return
         }
-        guard let date = dateTextField.text else {
+        guard let dateString = dateTextField.text else {
             return
         }
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -105,10 +105,12 @@ class ModifyAddToDoneViewController: UIViewController {
         guard let documentId = task?.documentId else {
             return
         }
-
+        
+        let date = datePicker.date
         let docData = [
             "name": name,
             "detail": detail,
+            "dateString": dateString,
             "date": date,
             "documentId": documentId
             ] as [String : Any]

@@ -94,18 +94,20 @@ class AddToDoneViewController: UIViewController {
         guard let detail = detailTextView.text else {
             return
         }
-        guard let date = dateTextField.text else {
+        guard let dateString = dateTextField.text else {
             return
         }
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
         
+        let date = datePicker.date
         let documentID = UIViewController.randomString(length: 20)
 
         let docData = [
             "name": name,
             "detail": detail,
+            "dateString": dateString,
             "date": date,
             "documentId": documentID
             ] as [String : Any]
